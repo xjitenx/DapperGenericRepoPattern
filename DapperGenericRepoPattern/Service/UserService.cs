@@ -6,35 +6,35 @@ namespace DapperGenericRepoPattern.Service
 {
     public class UserService: IUserService
     {
-        private readonly IBaseRepository<User> _baseRepository;
-        public UserService(IBaseRepository<User> baseRepository)
+        private readonly IUserRepository _userRepository;
+        public UserService(IUserRepository userRepository)
         {
-            _baseRepository = baseRepository;
+            _userRepository = userRepository;
         }
 
-        public List<User> GetAll()
+        public async Task<IEnumerable<User>> GetAll()
         {
-            return _baseRepository.GetAll();
+            return await _userRepository.GetAll();
         }
 
-        public User GetById(Guid id)
+        public async Task<User> GetById(Guid id)
         {
-            return _baseRepository.GetById(id);
+            return await _userRepository.GetById(id);
         }
 
-        public bool Insert(User user)
+        public async Task<bool> Add(User user)
         {
-            return _baseRepository.Insert(user);
+            return await _userRepository.Add(user);
         }
 
-        public bool Update(User user)
+        public async Task<bool> Update(User user)
         {
-            return _baseRepository.Update(user);
+            return await _userRepository.Update(user);
         }
 
-        public bool Delete(Guid id)
+        public async Task<bool> Delete(User user)
         {
-            return _baseRepository.Delete(id);
+            return await _userRepository.Delete(user);
         }
     }
 }

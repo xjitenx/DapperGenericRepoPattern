@@ -9,21 +9,20 @@ using System.Reflection;
 using System.Text;
 using System.Data;
 using DapperGenericRepoPattern.DataContext;
+using static Dapper.SqlMapper;
 
 namespace DapperGenericRepoPattern.Repository
 {
     public class BaseRepository<T> : IBaseRepository<T> where T : IDbEntity
     {
-        IDbConnection _connection;
-        protected readonly DapperDataContext _dapperDataContext;
+        protected readonly IDapperDataContext _dapperDataContext;
 
-        public BaseRepository(IConfiguration configuration, DapperDataContext dapperDataContext)
+        public BaseRepository(IDapperDataContext dapperDataContext)
         {
             _dapperDataContext = dapperDataContext;
-            _connection = new SqlConnection(configuration.GetConnectionString("SqlConnection"));
         }
 
-        public bool Add(T entity)
+        public async Task<bool> Add(T entity)
         {
             int rowsEffected = 0;
             try
@@ -33,14 +32,17 @@ namespace DapperGenericRepoPattern.Repository
                 string properties = GetPropertyNames(excludeKey: true);
                 string query = $"INSERT INTO {tableName} ({columns}) VALUES ({properties})";
 
-                rowsEffected = _connection.Execute(query, entity);
+                using(var connection =  _dapperDataContext.Connection)
+                {
+                    rowsEffected = await connection!.ExecuteAsync(query, entity);
+                }
             }
             catch (Exception ex) { }
 
             return rowsEffected > 0 ? true : false;
         }
 
-        public bool Delete(T entity)
+        public async Task<bool> Delete(T entity)
         {
             int rowsEffected = 0;
             try
@@ -50,14 +52,17 @@ namespace DapperGenericRepoPattern.Repository
                 string keyProperty = GetKeyPropertyName();
                 string query = $"DELETE FROM {tableName} WHERE {keyColumn} = @{keyProperty}";
 
-                rowsEffected = _connection.Execute(query, entity);
+                using (var connection = _dapperDataContext.Connection)
+                {
+                    rowsEffected = await connection!.ExecuteAsync(query, entity);
+                }
             }
             catch (Exception ex) { }
 
             return rowsEffected > 0 ? true : false;
         }
 
-        public IEnumerable<T> GetAll()
+        public async Task<IEnumerable<T>> GetAll()
         {
             IEnumerable<T> result = null;
             try
@@ -65,30 +70,36 @@ namespace DapperGenericRepoPattern.Repository
                 string tableName = GetTableName();
                 string query = $"SELECT * FROM {tableName}";
 
-                result = _connection.Query<T>(query);
+                using (var connection = _dapperDataContext.Connection)
+                {
+                    result = await connection!.QueryAsync<T>(query);
+                }
             }
             catch (Exception ex) { }
-
+            
             return result;
         }
 
-        public T GetById(int Id)
+        public async Task<T> GetById(Guid id)
         {
             IEnumerable<T> result = null;
             try
             {
                 string tableName = GetTableName();
                 string keyColumn = GetKeyColumnName();
-                string query = $"SELECT * FROM {tableName} WHERE {keyColumn} = '{Id}'";
+                string query = $"SELECT * FROM {tableName} WHERE {keyColumn} = '{id}'";
 
-                result = _connection.Query<T>(query);
+                using (var connection = _dapperDataContext.Connection)
+                {
+                    result = await connection!.QueryAsync<T>(query);
+                }
             }
             catch (Exception ex) { }
 
             return result.FirstOrDefault();
         }
 
-        public bool Update(T entity)
+        public async Task<bool> Update(T entity)
         {
             int rowsEffected = 0;
             try
@@ -114,7 +125,10 @@ namespace DapperGenericRepoPattern.Repository
 
                 query.Append($" WHERE {keyColumn} = @{keyProperty}");
 
-                rowsEffected = _connection.Execute(query.ToString(), entity);
+                using (var connection = _dapperDataContext.Connection)
+                {
+                    rowsEffected = await connection!.ExecuteAsync(query.ToString(), entity);
+                }
             }
             catch (Exception ex) { }
 

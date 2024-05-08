@@ -4,10 +4,10 @@ namespace DapperGenericRepoPattern.Service.IService
 {
     public interface IUserService
     {
-        List<User> GetAll();
-        User GetById(Guid id);
-        bool Insert(User user);
-        bool Update(User user);
-        bool Delete(Guid id);
+        Task<IEnumerable<User>> GetAll();
+        Task<User> GetById(Guid id);
+        Task<bool> Add(User user);
+        Task<bool> Update(User user);
+        Task<bool> Delete(User user);
     }
 }

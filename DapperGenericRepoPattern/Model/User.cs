@@ -3,17 +3,17 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DapperGenericRepoPattern.Model
 {
-    [Table("user")]
+    [Table("dbo.[User]")]
     public class User: IDbEntity
     {
         [Key]
-        [Column("id")]
+        [Column("Id")]
         public Guid Id { get; set; } = Guid.NewGuid();
-        [Column("name")]
+        [Column("Name")]
         public string? Name { get; set; }
-        [Column("address")]
+        [Column("Address")]
         public string? Address { get; set; }
-        [Column("mobile_no")]
+        [Column("MobileNo")]
         public string? MobileNo { get; set; }
     }
 }
